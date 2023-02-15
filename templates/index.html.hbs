@@ -1,6 +1,26 @@
 {{#*inline "page"}}
 
-<h1> Hello {{ test }} </h1>
+<div class="header">
+  <div class="pure-menu pure-menu-horizontal">
+<h1 class="page-title-big">104</h1>
+<h3 class="page-title-small">things to photograph</h3>
+  </div>
+</div>
+
+
+<div class="content">
+  {{#each words}}
+  <div class="pure-g">
+    <div class="image pure-u-1-2">
+      {{this.0}}
+      <img src="/image/0/{{this.0}}"></img>
+    </div>
+    <div class="image pure-u-1-2">
+      {{this.0}}
+    </div>
+  </div>
+  {{/each}}
+</div>
 
 {{/inline}}
 {{> layout}}

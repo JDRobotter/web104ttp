@@ -3,28 +3,33 @@ use rocket_dyn_templates::{Template, context};
 
 use std::path::Path;
 
+mod words;
+use words::WORDS;
+
+struct AppState {
+    words: Vec<(u64, &'static str)>,
+}
+
 #[get("/")]
-fn index() -> Template {
+fn index(state: &State<AppState>) -> Template {
     Template::render("index", context! {
-        test:"loutre",
+        words: &state.words,
     })
 }
 
-#[get("/show/<n>")]
-fn show(n: u64) -> Template {
-    Template::render("show", context! {
-        n,
-    })
-}
-
-#[get("/image/<n>")]
-async fn image(n: u64) -> Option<fs::NamedFile> {
-    fs::NamedFile::open(Path::new("/home/jdam/Downloads/unknown.png")).await.ok()
+#[get("/image/<_side>/<n>")]
+async fn image(_side: u64, n: u64) -> Option<fs::NamedFile> {
+    let path = format!("/home/jdam/Pictures/STJLZ_{}.png", n);
+    let path = Path::new(&path);
+    fs::NamedFile::open(path).await.ok()
 }
 
 #[launch]
 fn rocket() -> _ {
     build()
-        .mount("/", routes![index, show, image])
+        .manage(AppState {
+            words: Vec::from(WORDS),
+        })
+        .mount("/", routes![index, image])
         .attach(Template::fairing())
 }
