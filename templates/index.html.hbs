@@ -6,8 +6,8 @@
     <!-- TITLE -->
     <div class="columns">
       <div class="column is-full has-text-centered">
-        <h1 class="title-104 title is-1">104</h1>
-        <h2 class="subtitle is-4">
+        <h1 class="title-104 title">104</h1>
+        <h2 class="title-ttp subtitle">
           <span class="title-things">things</span>
           <span class="title-to">to</span>
           <span class="title-photograph">photograph</span>
@@ -19,15 +19,32 @@
     <div class="columns">
     <div class="column">
     <div class="tile is-ancestor is-vertical">
-      {{#each words}}
+
+      <!-- break line -->
+      <div class="tile is-12 is-parent">
+      <div class="tile is-12 is-child">
+        <div class="photo-break"></div>
+      </div>
+      </div>
+
+      {{#each pictures}}
 
       <!-- images -->
       <div class="tile is-12 is-parent">
-        {{#each [0,1]}}
+        {{#each shows}}
         <div class="tile is-6 is-child">
-          <figure class="image is-16-by-9">
-            <img src="/image/{{this}}/{{../this.0}}" loading="lazy"></img>
+          <div class="photo-image-wrapper">
+          <figure class="image is-16by9">
+            {{#if this}}
+              <img class="photo-image" src="/image/{{@index}}/{{../id}}?thumb=1" loading="lazy"></img>
+            {{else}}
+              <div class="no-image-placeholder has-ratio">
+                <a class="button is-rounded is-warning is-outlined"
+                   href="/edit/{{@index}}/{{../id}}">ajouter</a>
+              </div>
+            {{/if}}
           </figure>
+          </div>
         </div>
         {{/each}}
       </div>
@@ -35,11 +52,20 @@
       <!-- subtitle -->
       <div class="tile is-12 is-parent">
       <div class="tile is-12 is-child">
-        <div class="image-subtitle">
-          <p> {{this.1}} </p>
+        <div class="photo-subtitle">
+          <p> {{word}} </p>
         </div>
       </div>
       </div>
+      
+      <!-- break line -->
+      <div class="tile is-12 is-parent">
+      <div class="tile is-12 is-child">
+        <div class="photo-break"></div>
+      </div>
+      </div>
+ 
+
 
       {{/each}}
     </div>

@@ -1,0 +1,130 @@
+{{#*inline "page"}}
+
+<div class="container">
+
+    <div class="columns">
+    <div class="column is-full has-text-centered">
+          <div class="photo-image-wrapper">
+          <figure class="image is-16by9">
+            {{#if show}}
+              <img class="photo-image" src="/image/{{side}}/{{n}}" loading="lazy"></img>
+            {{else}}
+              <div class="no-image-placeholder has-ratio">
+              </div>
+            {{/if}}
+          </figure>
+          </div>
+    </div>
+    </div>
+
+    <div class="columns">
+    <div class="add-photo-buttons column is-full has-text-centered">
+      <div class="file">
+        <label class="file-label">
+          <input 
+            id="picture-uploader"
+            class="file-input"
+            type="file"
+            accept="image/*"
+            onchange="uploadFile(this)"
+            >
+          <span class="file-cta">
+            <span class="file-icon">
+              <i class="fas fa-upload"></i>
+            </span>
+            <span class="file-label">
+              Ajouter une image
+            </span>
+          </span>
+        </label>
+      </div>
+    </div>
+    </div>
+
+</div>
+
+<script>
+function arrayBufferToBase64(buffer) {
+
+  var binary = '';
+  var bytes = new Uint8Array(buffer);
+  var len = bytes.byteLength;
+  for(var i=0; i<len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+async function uploadFile(e) {
+
+    let file = e.files[0];
+    const chunk_size = 256*1024;
+    let idx = 0;
+ 
+    const body = {
+        side: {{side}},
+        n: {{n}},
+        size: file.size,
+    };
+    // prepare upload to server
+    const response = await fetch('/upload/prepare', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+    const data = await response.json();
+
+    // server has accepted transfer and given us a transfer UID
+    const xfer_uid = data.uid;
+    console.log("XFER UID", xfer_uid);
+
+    const buffer = await file.arrayBuffer();
+
+    // slice file into chunks
+    while(idx < file.size) {
+        let a = idx;
+        let b = Math.min(idx + chunk_size, file.size);
+        let slice = buffer.slice(a,b);
+        console.log(">", a,b, b-a); 
+
+        // convert slice to base 64
+        const b64 = arrayBufferToBase64(slice);
+
+        const data = {
+            uid: xfer_uid,
+            position: idx,
+            data: b64,
+        };
+        await fetch('/upload/chunk', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        idx = b;
+    }
+
+    // finalize upload
+    const fdata = {
+        uid: xfer_uid,
+    };
+    const fresponse = await fetch('/upload/finish', {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+
+    // force page reload
+    location.reload();
+}
+</script>
+
+
+{{/inline}}
+{{> layout}}

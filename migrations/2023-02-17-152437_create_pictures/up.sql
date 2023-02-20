@@ -1,0 +1,15 @@
+-- Your SQL goes here
+CREATE TABLE pictures (
+  id INTEGER NOT NULL PRIMARY KEY,
+  word TEXT NOT NULL
+);
+
+CREATE TABLE blobs (
+  id INTEGER NOT NULL,
+  side INTEGER NOT NULL,
+  thumbnail BOOLEAN NOT NULL DEFAULT FALSE,
+  data BLOB NOT NULL,
+  mime TEXT NOT NULL,
+  show BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY KEY (id, side, thumbnail)
+);

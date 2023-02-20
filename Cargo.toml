@@ -6,5 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = { version = "0.5.0-rc.2", features = ["secrets"] }
+anyhow = "1.0.69"
+base64 = "0.21.0"
+diesel = { version = "1.4.1", features = ["sqlite"] }
+image = "=0.24.0"
+png = "=0.17.3"
+rand = "0.8.5"
+rocket = { version = "0.5.0-rc.2", features = ["json", "secrets"] }
 rocket_dyn_templates = { version = "0.1.0-rc.2", features = ["handlebars"] }
+rocket_sync_db_pools = { version = "0.1.0-rc.2", features = ["diesel_sqlite_pool"] }
+serde = "1.0.140"

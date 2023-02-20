@@ -2,7 +2,7 @@
 pub const WORDS: [(u64, &'static str); 104] = [
   (1,"A sweatshirt"),
   (2,"Somersault"),
-  (3,"Messy hair"),
+  (3,"Des cheveux en bataille"),
   (4,"Belly laugh"),
   (5,"Jumping rope"),
   (6,"Shoelaces tied together"),
