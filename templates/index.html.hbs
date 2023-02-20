@@ -2,7 +2,7 @@
 
 <div class="container">
 <div>
-
+    {{my_side}}
     <!-- TITLE -->
     <div class="columns">
       <div class="column is-full has-text-centered">
@@ -39,8 +39,10 @@
               <img class="photo-image" src="/image/{{@index}}/{{../id}}?thumb=1" loading="lazy"></img>
             {{else}}
               <div class="no-image-placeholder has-ratio">
+                {{#if (eq @index ../../my_side) }}
                 <a class="button is-rounded is-warning is-outlined"
                    href="/edit/{{@index}}/{{../id}}">ajouter</a>
+                {{/if}}
               </div>
             {{/if}}
           </figure>
@@ -50,7 +52,7 @@
       </div>
 
       <!-- subtitle -->
-      <div class="tile is-12 is-parent">
+      <div class="tile-photo-subtitle tile is-12 is-parent">
       <div class="tile is-12 is-child">
         <div class="photo-subtitle">
           <p> {{word}} </p>

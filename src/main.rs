@@ -17,14 +17,60 @@ mod uploader;
 mod image_process;
 
 use rocket_sync_db_pools::database;
+use rocket_auth::{Users, User, Error, Auth, Login};
 
 #[database("pictures")]
 struct PicturesDbConn(diesel::SqliteConnection);
 
 use crate::uploader::FileUploader;
+
 pub struct AppState {
 
     uploader: Arc<Mutex<FileUploader>>,
+}
+
+use rocket::response::Redirect;
+use rocket::form::Form;
+
+fn side_from_email(email: &str) -> i32 {
+    if email == "jd" {
+        1
+    }
+    else {
+        0
+    }
+}
+
+
+#[post("/login", data="<form>")]
+async fn login(form: Form<Login>, auth: Auth<'_>) -> Redirect {
+    let r = auth.login(&form).await;
+
+    if r.is_ok() {
+        Redirect::to("/")
+    }
+    else {
+        Redirect::to("/auth")
+    }
+}
+
+#[get("/logout")]
+fn logout(auth: Auth<'_>) {
+    auth.logout();
+}
+
+#[catch(401)]
+async fn catch_401() -> Redirect {
+    Redirect::to("/auth")
+}
+
+
+#[get("/auth")]
+async fn no_auth()
+        -> Result<Template, rocket::response::Debug<anyhow::Error>> {
+
+    Ok(Template::render("auth", context! {
+    }))
 }
 
 #[derive(Serialize)]
@@ -36,7 +82,8 @@ struct PictureWithShows {
 }
 
 #[get("/")]
-async fn index(conn: PicturesDbConn, state: &State<AppState>) -> Template {
+async fn index(conn: PicturesDbConn, user:User, state: &State<AppState>)
+        -> Result<Template, rocket::response::Debug<anyhow::Error>> {
 
     let (pictures, shows) = conn.run(move |c| { 
         let pictures = database::list_pictures(c);
@@ -61,13 +108,14 @@ async fn index(conn: PicturesDbConn, state: &State<AppState>) -> Template {
         });
     }
 
-    Template::render("index", context! {
+    Ok(Template::render("index", context! {
         pictures: pws,
-    })
+        my_side: side_from_email(user.email()),
+    }))
 }
 
 #[get("/edit/<side>/<n>")]
-async fn edit(conn: PicturesDbConn, side: u32, n: u32) -> Template {
+async fn edit(conn: PicturesDbConn, user:User, side: u32, n: u32) -> Template {
     let show = conn.run(move |c| { 
         database::fetch_blob_show(c, side as i32, n as i32).unwrap()
     }).await;
@@ -97,7 +145,7 @@ struct UploadStatus {
 }
 
 #[post("/upload/prepare", data="<params>")]
-async fn upload_prepare(state: &State<AppState>, params: Json<UploadPrepare>) -> Json<UploadStatus> {
+async fn upload_prepare(state: &State<AppState>, user:User, params: Json<UploadPrepare>) -> Json<UploadStatus> {
 
     println!("preparing upload for {:?}",params);
 
@@ -126,7 +174,7 @@ struct ChunkUpload<'r> {
 
 use base64::{Engine as _, engine::general_purpose};
 #[post("/upload/chunk", data="<chunk>")]
-async fn upload_chunk(state: &State<AppState>, chunk: Json<ChunkUpload<'_>>) -> Result<(), rocket::response::Debug<anyhow::Error>> {
+async fn upload_chunk(state: &State<AppState>, user:User, chunk: Json<ChunkUpload<'_>>) -> Result<(), rocket::response::Debug<anyhow::Error>> {
     println!("new chunk");
 
     // try to decode base64
@@ -147,7 +195,8 @@ struct UploadFinish {
 }
 
 #[post("/upload/finish", data="<params>")]
-async fn upload_finish(state: &State<AppState>, conn: PicturesDbConn, params: Json<UploadFinish>) -> Result<(), rocket::response::Debug<anyhow::Error>> {
+async fn upload_finish(state: &State<AppState>, user:User, conn: PicturesDbConn, params: Json<UploadFinish>)
+        -> Result<(), rocket::response::Debug<anyhow::Error>> {
 
     println!("finish");
     let uid = params.uid;
@@ -181,7 +230,7 @@ async fn upload_finish(state: &State<AppState>, conn: PicturesDbConn, params: Js
 use rocket::http::ContentType;
 
 #[get("/image/<side>/<n>?<thumb>")]
-async fn image(conn: PicturesDbConn, side: u32, n: u32, thumb: Option<u8>) 
+async fn image(conn: PicturesDbConn, user:User, side: u32, n: u32, thumb: Option<u8>) 
     -> Result<(ContentType, Vec<u8>), rocket::response::Debug<anyhow::Error>> {
 
     let thumb = thumb.unwrap_or(0) != 0;
@@ -195,14 +244,20 @@ async fn image(conn: PicturesDbConn, side: u32, n: u32, thumb: Option<u8>)
 use rocket::fs::{relative, FileServer};
 
 #[launch]
-fn rocket() -> _ {
+async fn rocket() -> _ {
+
+    let users = Users::open_rusqlite("./users.db").unwrap();
+    users.create_user("jd", "loutre42", true).await.ok();
+    users.create_user("el", "loutre42", true).await.ok();
 
     build()
         .manage(AppState {
             uploader: Arc::new(Mutex::new(FileUploader::new())),
         })
+        .manage(users)
         .mount("/static", FileServer::from(relative!("./static")))
-        .mount("/", routes![index, edit, upload_prepare, upload_chunk, upload_finish, image])
+        .mount("/", routes![login, logout, no_auth, index, edit, upload_prepare, upload_chunk, upload_finish, image])
+        .register("/", catchers![catch_401])
         .attach(Template::fairing())
         .attach(PicturesDbConn::fairing())
         .attach(AdHoc::on_liftoff("Database update", |rocket| 

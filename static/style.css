@@ -62,6 +62,18 @@
   margin: auto;
 }
 
+.login h1 {
+  color: #eee;
+}
+
+.login label {
+  color: #eee;
+}
+
+.tile-photo-subtitle {
+  padding-top:0 !important;
+}
+
 body {
   font-family: 'Acme', serif;
   /*background-color:#d2332f;*/

@@ -1,0 +1,41 @@
+{{#*inline "page"}}
+
+<div class="container login">
+<div>
+
+    <!-- TITLE -->
+    <div class="columns">
+      <div class="column is-full has-text-centered">
+        <h1 class="title">Authentifiez-vous</h1>
+      </div>
+    </div>
+
+    <form action="/login" method="POST" >
+    <div class="columns">
+      <div class="column">
+        <div class="field">
+          <label class="label">Username</label>
+          <div class="control">
+            <input class="input" name="email" type="text" placeholder="username">
+          </div>
+        </div>
+        
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="control">
+            <input class="input" name="password" type="password" placeholder="password" value="">
+          </div>
+        </div>
+
+        <div class="field">
+          <button class="button is-link">Login</button>
+        </div>
+      </div>
+    </div>
+    </form>
+
+</div>
+</div>
+
+{{/inline}}
+{{> layout}}
