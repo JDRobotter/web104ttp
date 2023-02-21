@@ -148,8 +148,6 @@ struct UploadStatus {
 #[post("/upload/prepare", data="<params>")]
 async fn upload_prepare(state: &State<AppState>, _user:User, params: Json<UploadPrepare>) -> Json<UploadStatus> {
 
-    println!("preparing upload for {:?}",params);
-
     let uid = {
         let mut uploader = state.uploader.lock().unwrap();
         uploader.clean_sessions();
@@ -176,7 +174,6 @@ struct ChunkUpload<'r> {
 use base64::{Engine as _, engine::general_purpose};
 #[post("/upload/chunk", data="<chunk>")]
 async fn upload_chunk(state: &State<AppState>, _user:User, chunk: Json<ChunkUpload<'_>>) -> Result<(), rocket::response::Debug<anyhow::Error>> {
-    println!("new chunk");
 
     // try to decode base64
     let data = general_purpose::STANDARD.decode(chunk.data).unwrap();
@@ -199,7 +196,6 @@ struct UploadFinish {
 async fn upload_finish(state: &State<AppState>, _user:User, conn: PicturesDbConn, params: Json<UploadFinish>)
         -> Result<(), rocket::response::Debug<anyhow::Error>> {
 
-    println!("finish");
     let uid = params.uid;
 
     // fetch pictures bytes from uploader
@@ -208,11 +204,7 @@ async fn upload_finish(state: &State<AppState>, _user:User, conn: PicturesDbConn
         uploader.take(uid)?
     };
 
-    println!("got {} bytes", bytes.len());
-
     let (image_bytes, thumb_bytes) = image_process::process(bytes)?;
-
-    println!("thumb {}", thumb_bytes.len());
 
     conn.run(move |c| {
 

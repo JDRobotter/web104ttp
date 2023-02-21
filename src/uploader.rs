@@ -56,13 +56,11 @@ impl FileUploader {
 
         self.sessions.insert(uid, Session::new(n, side, size));
 
-        println!("new session : {}", uid);
         Ok(uid)
     }
 
     pub fn add_chunk(&mut self, uid: u32, position:usize, chunk: &[u8]) -> Result<()> {
 
-        println!("add_chunk: {} {} {}", uid, position, chunk.len());
         // find upload session
         let session = self.sessions.get_mut(&uid)
             .ok_or(Error::msg("no session"))?;

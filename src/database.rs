@@ -12,7 +12,6 @@ pub fn fetch_picture_blob(conn: &mut diesel::SqliteConnection,
                           picture_id: i32,
                           is_thumbnail: bool) -> Result<Vec<u8>> {
 
-    println!("fetch_picture_blob {} {} {}", picture_side, picture_id, is_thumbnail);
     use crate::schema::blobs::dsl::*;
     let blob = blobs_table
         .select((id, side, thumbnail, data, mime, show))
@@ -44,8 +43,6 @@ pub fn insert_picture_blob(conn: &mut diesel::SqliteConnection,
                             is_thumbnail: bool,
                             blob: Vec<u8>) -> Result<()> {
 
-    println!("insert_picture_blob {} {} {}", picture_id, picture_side, is_thumbnail);
-
     diesel::insert_into(blobs_table)
         .values(Blob {
             id: picture_id,
@@ -71,7 +68,6 @@ pub fn fetch_blob_show(conn: &mut diesel::SqliteConnection, picture_side: i32, p
         .first::<bool>(conn)
         .unwrap_or(false);
 
-    println!("fetch_blob_show {} {} {:?}", picture_id, picture_side, b);
     Ok(b)
 }
 
