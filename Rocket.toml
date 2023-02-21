@@ -1,7 +1,9 @@
 [debug]
 address = "0.0.0.0"
 port = 8000
+secret_key = CGZaC2wApVKTYoij1e3wHRz5Oo2ioypSdHF8Ubrxptk=
 
 [default.databases]
 pictures = { url = "./pictures.sqlite" }
+
 

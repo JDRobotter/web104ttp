@@ -7,7 +7,7 @@ struct Session {
     picture_id: u32,
     picture_side: u32,
     
-    total_size: usize,
+    _total_size: usize,
     bytes: Vec<u8>,
 }
 
@@ -19,7 +19,7 @@ impl Session {
         Self {
             picture_id,
             picture_side,
-            total_size,
+            _total_size:total_size,
             bytes: vec![0; total_size],
         }
     }

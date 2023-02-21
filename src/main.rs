@@ -4,7 +4,6 @@ use rocket::fairing::AdHoc;
 use anyhow::Result;
 
 use std::sync::{Arc, Mutex};
-use std::path::Path;
 
 #[macro_use]
 extern crate diesel;
@@ -17,7 +16,7 @@ mod uploader;
 mod image_process;
 
 use rocket_sync_db_pools::database;
-use rocket_auth::{Users, User, Error, Auth, Login};
+use rocket_auth::{Users, User, Auth, Login};
 
 #[database("pictures")]
 struct PicturesDbConn(diesel::SqliteConnection);
@@ -55,8 +54,10 @@ async fn login(form: Form<Login>, auth: Auth<'_>) -> Redirect {
 }
 
 #[get("/logout")]
-fn logout(auth: Auth<'_>) {
-    auth.logout();
+fn logout(auth: Auth<'_>) -> Redirect {
+    auth.logout().ok();
+
+    Redirect::to("/")
 }
 
 #[catch(401)]
@@ -82,7 +83,7 @@ struct PictureWithShows {
 }
 
 #[get("/")]
-async fn index(conn: PicturesDbConn, user:User, state: &State<AppState>)
+async fn index(conn: PicturesDbConn, user:User)
         -> Result<Template, rocket::response::Debug<anyhow::Error>> {
 
     let (pictures, shows) = conn.run(move |c| { 
@@ -115,7 +116,7 @@ async fn index(conn: PicturesDbConn, user:User, state: &State<AppState>)
 }
 
 #[get("/edit/<side>/<n>")]
-async fn edit(conn: PicturesDbConn, user:User, side: u32, n: u32) -> Template {
+async fn edit(conn: PicturesDbConn, _user:User, side: u32, n: u32) -> Template {
     let show = conn.run(move |c| { 
         database::fetch_blob_show(c, side as i32, n as i32).unwrap()
     }).await;
@@ -145,7 +146,7 @@ struct UploadStatus {
 }
 
 #[post("/upload/prepare", data="<params>")]
-async fn upload_prepare(state: &State<AppState>, user:User, params: Json<UploadPrepare>) -> Json<UploadStatus> {
+async fn upload_prepare(state: &State<AppState>, _user:User, params: Json<UploadPrepare>) -> Json<UploadStatus> {
 
     println!("preparing upload for {:?}",params);
 
@@ -174,7 +175,7 @@ struct ChunkUpload<'r> {
 
 use base64::{Engine as _, engine::general_purpose};
 #[post("/upload/chunk", data="<chunk>")]
-async fn upload_chunk(state: &State<AppState>, user:User, chunk: Json<ChunkUpload<'_>>) -> Result<(), rocket::response::Debug<anyhow::Error>> {
+async fn upload_chunk(state: &State<AppState>, _user:User, chunk: Json<ChunkUpload<'_>>) -> Result<(), rocket::response::Debug<anyhow::Error>> {
     println!("new chunk");
 
     // try to decode base64
@@ -195,7 +196,7 @@ struct UploadFinish {
 }
 
 #[post("/upload/finish", data="<params>")]
-async fn upload_finish(state: &State<AppState>, user:User, conn: PicturesDbConn, params: Json<UploadFinish>)
+async fn upload_finish(state: &State<AppState>, _user:User, conn: PicturesDbConn, params: Json<UploadFinish>)
         -> Result<(), rocket::response::Debug<anyhow::Error>> {
 
     println!("finish");
@@ -230,7 +231,7 @@ async fn upload_finish(state: &State<AppState>, user:User, conn: PicturesDbConn,
 use rocket::http::ContentType;
 
 #[get("/image/<side>/<n>?<thumb>")]
-async fn image(conn: PicturesDbConn, user:User, side: u32, n: u32, thumb: Option<u8>) 
+async fn image(conn: PicturesDbConn, _user:User, side: u32, n: u32, thumb: Option<u8>) 
     -> Result<(ContentType, Vec<u8>), rocket::response::Debug<anyhow::Error>> {
 
     let thumb = thumb.unwrap_or(0) != 0;

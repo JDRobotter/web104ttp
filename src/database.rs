@@ -1,9 +1,10 @@
 use diesel::prelude::*;
-use crate::{models::*, schema::blobs};
+use crate::models::*;
 
 use anyhow::Result;
 
-use crate::schema::pictures;
+use crate::schema::pictures::table as pictures_table;
+use crate::schema::blobs::table as blobs_table;
 use crate::words::WORDS;
 
 pub fn fetch_picture_blob(conn: &mut diesel::SqliteConnection,
@@ -12,8 +13,8 @@ pub fn fetch_picture_blob(conn: &mut diesel::SqliteConnection,
                           is_thumbnail: bool) -> Result<Vec<u8>> {
 
     println!("fetch_picture_blob {} {} {}", picture_side, picture_id, is_thumbnail);
-    use crate::schema::blobs::{self, dsl::*};
-    let blob = blobs::table
+    use crate::schema::blobs::dsl::*;
+    let blob = blobs_table
         .select((id, side, thumbnail, data, mime, show))
         .filter(id.eq(picture_id)
                 .and(side.eq(picture_side))
@@ -27,9 +28,8 @@ pub fn remove_picture_blobs(conn: &mut diesel::SqliteConnection,
                                 picture_id: i32,
                                 picture_side: i32) -> Result<()> {
 
-    use crate::schema::blobs;
     use crate::schema::blobs::dsl::*;
-    diesel::delete(blobs::table)
+    diesel::delete(blobs_table)
         .filter(id.eq(picture_id)
                 .and(side.eq(picture_side))
         )
@@ -46,8 +46,7 @@ pub fn insert_picture_blob(conn: &mut diesel::SqliteConnection,
 
     println!("insert_picture_blob {} {} {}", picture_id, picture_side, is_thumbnail);
 
-    use crate::schema::blobs;
-    let query = diesel::insert_into(blobs::table)
+    diesel::insert_into(blobs_table)
         .values(Blob {
             id: picture_id,
             side: picture_side,
@@ -62,9 +61,9 @@ pub fn insert_picture_blob(conn: &mut diesel::SqliteConnection,
 }
 
 pub fn fetch_blob_show(conn: &mut diesel::SqliteConnection, picture_side: i32, picture_id: i32) -> Result<bool> {
-    use crate::schema::blobs;
+
     use crate::schema::blobs::dsl::*;
-    let b = blobs::table
+    let b = blobs_table
         .select(show)
         .filter(id.eq(picture_id)
                 .and(side.eq(picture_side))
@@ -78,9 +77,8 @@ pub fn fetch_blob_show(conn: &mut diesel::SqliteConnection, picture_side: i32, p
 
 pub fn list_blobs_show(conn: &mut diesel::SqliteConnection) -> Result<Vec<(i32,i32,bool)>> {
 
-    use crate::schema::blobs;
     use crate::schema::blobs::dsl::*;
-    let vec = blobs::table
+    let vec = blobs_table
         .select((id, side, show))
         .load::<(i32,i32,bool)>(conn)?;
 
@@ -89,7 +87,7 @@ pub fn list_blobs_show(conn: &mut diesel::SqliteConnection) -> Result<Vec<(i32,i
 
 pub fn list_pictures(conn: &mut diesel::SqliteConnection) -> Vec<Picture> {
     
-    pictures::table
+    pictures_table
         .load::<Picture>(conn)
         .expect("Error loading pictures")
 }
@@ -111,8 +109,7 @@ pub fn setup_and_update(conn: &mut diesel::SqliteConnection) {
 
         if count > 0 {
             // entry already exist, update word if needed
-            use crate::schema::pictures;
-            diesel::update(pictures::table)
+            diesel::update(pictures_table)
                 .filter(id.eq(s_id))
                 .set(word.eq(s_word))
                 .execute(conn)
@@ -120,8 +117,7 @@ pub fn setup_and_update(conn: &mut diesel::SqliteConnection) {
         }
         else {
             // entry does not exist push a new default entry
-            use crate::schema::pictures;
-            diesel::insert_into(pictures::table)
+            diesel::insert_into(pictures_table)
                 .values(Picture {
                     id: s_id,
                     word: s_word.to_string(),
