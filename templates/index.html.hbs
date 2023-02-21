@@ -36,7 +36,9 @@
           <div class="photo-image-wrapper">
           <figure class="image is-16by9">
             {{#if this}}
-              <img class="photo-image" src="/image/{{@index}}/{{../id}}?thumb=1" loading="lazy"></img>
+              <a href="/image/{{@index}}/{{../id}}">
+                <img class="photo-image" src="/image/{{@index}}/{{../id}}?thumb=1" loading="lazy"></img>
+              </a>
             {{else}}
               <div class="no-image-placeholder has-ratio">
                 {{#if (eq @index ../../my_side) }}
