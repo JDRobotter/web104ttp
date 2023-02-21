@@ -18,7 +18,14 @@
     </div>
 
     <div class="columns">
+    <div class="column is-full has-text-centered">
+      <progress id="progress" class="progress is-link is-small" value="100" min="0" max="100"></progress>
+    </div>
+    </div>
+
+    <div class="columns">
     <div class="add-photo-buttons column is-full has-text-centered">
+
       <div class="file is-warning is-outlined">
         <label class="file-label">
           <input 
@@ -53,6 +60,9 @@ function arrayBufferToBase64(buffer) {
 }
 
 async function uploadFile(e) {
+
+    const progress = document.getElementById("progress");
+    progress.value = 0;
 
     let file = e.files[0];
     const chunk_size = 256*1024;
@@ -102,8 +112,13 @@ async function uploadFile(e) {
             body: JSON.stringify(data),
         });
 
+        // on success update progress bar
+        progress.value = 90*idx/file.size;
+
         idx = b;
     }
+
+    progress.removeAttribute("value");
 
     // finalize upload
     const fdata = {
@@ -116,6 +131,8 @@ async function uploadFile(e) {
         },
         body: JSON.stringify(data),
     });
+
+    progress.value = 100;
 
     // force page reload
     location.reload();

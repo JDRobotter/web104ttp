@@ -74,6 +74,11 @@
   padding-top:0 !important;
 }
 
+.progress {
+  width:50%;
+  margin:auto;
+}
+
 body {
   font-family: 'Acme', serif;
   /*background-color:#d2332f;*/
