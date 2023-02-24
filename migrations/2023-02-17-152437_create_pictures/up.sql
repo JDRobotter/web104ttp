@@ -11,5 +11,6 @@ CREATE TABLE blobs (
   data BLOB NOT NULL,
   mime TEXT NOT NULL,
   show BOOLEAN NOT NULL DEFAULT FALSE,
+  hash INTEGER NOT NULL,
   PRIMARY KEY (id, side, thumbnail)
 );

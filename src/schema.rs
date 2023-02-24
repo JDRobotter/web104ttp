@@ -8,6 +8,7 @@ diesel::table! {
         data -> Binary,
         mime -> Text,
         show -> Bool,
+        hash -> Integer,
     }
 }
 

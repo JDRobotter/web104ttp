@@ -17,6 +17,7 @@ pub struct Blob {
     pub data: Vec<u8>,
     pub mime: String,
     pub show: bool,
+    pub hash: i32,
 }
 
 

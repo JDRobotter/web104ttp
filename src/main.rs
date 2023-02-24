@@ -80,6 +80,7 @@ struct PictureWithShows {
     id: i32,
     word: String,
     shows: Vec<bool>,
+    hashs: Vec<i32>,
 }
 
 #[get("/")]
@@ -96,9 +97,11 @@ async fn index(conn: PicturesDbConn, user:User)
     for pic in pictures {
 
         let mut ps = vec![false; 2];
-        for (pic_id, pic_side, show) in &shows {
+        let mut hashs = vec![0; 2];
+        for (pic_id, pic_side, show, hash) in &shows {
             if *pic_id == pic.id {
                 ps[*pic_side as usize] = *show;
+                hashs[*pic_side as usize] = *hash;
             }
         }
 
@@ -106,6 +109,7 @@ async fn index(conn: PicturesDbConn, user:User)
             id: pic.id,
             word: pic.word,
             shows: ps,
+            hashs,
         });
     }
 
@@ -204,7 +208,7 @@ async fn upload_finish(state: &State<AppState>, _user:User, conn: PicturesDbConn
         uploader.take(uid)?
     };
 
-    let (image_bytes, thumb_bytes) = image_process::process(bytes)?;
+    let (image_bytes, thumb_bytes, hash) = image_process::process(bytes)?;
 
     conn.run(move |c| {
 
@@ -212,8 +216,8 @@ async fn upload_finish(state: &State<AppState>, _user:User, conn: PicturesDbConn
         database::remove_picture_blobs(c, pic_id as i32, pic_side as i32).unwrap();
 
         // push images to database
-        database::insert_picture_blob(c, pic_id as i32, pic_side as i32, false, image_bytes).unwrap();
-        database::insert_picture_blob(c, pic_id as i32, pic_side as i32, true, thumb_bytes).unwrap();
+        database::insert_picture_blob(c, pic_id as i32, pic_side as i32, false, image_bytes, hash).unwrap();
+        database::insert_picture_blob(c, pic_id as i32, pic_side as i32, true, thumb_bytes, hash).unwrap();
 
     }).await;
 
