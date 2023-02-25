@@ -2,7 +2,7 @@
 
 <div class="container">
 <div>
-    {{my_side}}
+
     <!-- TITLE -->
     <div class="columns">
       <div class="column is-full has-text-centered">
@@ -14,7 +14,16 @@
         </h2>
       </div>
     </div>
-    
+
+    <div class="columns">
+      <div class="column is-full has-text-centered">
+        <p class="word-list">
+        {{#each remaining_words}}
+            {{this}} •
+        {{/each}}   
+        </p>
+      </div>
+    </div>
     <!-- PHOTOS -->
     <div class="columns">
     <div class="column">

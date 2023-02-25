@@ -112,10 +112,20 @@ async fn index(conn: PicturesDbConn, user:User)
             hashs,
         });
     }
+    
+    let my_side = side_from_email(user.email());
+
+    let mut remaining_words = vec![];
+    for pic in &pws {
+        if !pic.shows[my_side as usize] {
+            remaining_words.push(&pic.word);
+        }
+    }
 
     Ok(Template::render("index", context! {
-        pictures: pws,
-        my_side: side_from_email(user.email()),
+        pictures: &pws,
+        remaining_words,
+        my_side,
     }))
 }
 

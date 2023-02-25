@@ -34,7 +34,7 @@
 }
 
 .photo-break {
-  width: 30%;
+  width: 60%;
   margin: auto;
   border:1px #aaa solid;
 }
@@ -82,6 +82,12 @@
 
 .auth-column {
   margin:auto;
+}
+
+.word-list {
+  font-family: serif;
+  font-size: 0.9em;
+  color: #aaa;
 }
 
 body {
