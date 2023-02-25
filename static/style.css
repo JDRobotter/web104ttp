@@ -20,7 +20,8 @@
 }
 
 .photo-image {
-  border-radius:1em;
+  border-radius: 1em;
+  object-fit: contain;
 }
 
 .photo-subtitle {
