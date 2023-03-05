@@ -19,7 +19,7 @@
       <div class="column is-full has-text-centered">
         <p class="word-list">
         {{#each remaining_words}}
-            {{this}} •
+          <a href="#anchor-word-{{this.0}}">{{this.1}}</a> •
         {{/each}}   
         </p>
       </div>
@@ -39,7 +39,7 @@
       {{#each pictures}}
 
       <!-- images -->
-      <div class="tile is-12 is-parent">
+      <div id="anchor-word-{{this.id}}"class="tile is-12 is-parent">
         {{#each shows}}
         <div class="tile is-6 is-child">
           <div class="photo-image-wrapper">

@@ -118,7 +118,7 @@ async fn index(conn: PicturesDbConn, user:User)
     let mut remaining_words = vec![];
     for pic in &pws {
         if !pic.shows[my_side as usize] {
-            remaining_words.push(&pic.word);
+            remaining_words.push((pic.id, &pic.word));
         }
     }
 

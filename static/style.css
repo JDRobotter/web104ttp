@@ -84,10 +84,14 @@
   margin:auto;
 }
 
-.word-list {
+.word-list a {
   font-family: serif;
   font-size: 0.9em;
   color: #aaa;
+}
+
+.word-list a:hover {
+  color:#ccc;
 }
 
 body {
